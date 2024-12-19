@@ -3,26 +3,17 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-String KEY = 'U01TX0FVVEgyMDI0MTEyMjE0NTAyNjExNTI1NzU=';
-
-// 주소 검색
 Future<List> search(String address) async {
-  final String url = 'https://business.juso.go.kr/addrlink/addrEngApiJsonp.do';
+  final String url = 'http://eunhotech.com/search'; // 실제 API 엔드포인트로 수정 필요
 
   // 파라미터 설정
   final Map<String, String> params = {
-    'currentPage': '1',
-    'countPerPage': '100',
-    'resultType': 'json',
-    'confmKey': KEY,
-    'keyword': address // 'keyword'에 'address'를 사용
+    'keyword': address,
   };
 
-  // URL에 파라미터 추가
-  final uri = Uri.parse(url).replace(queryParameters: params);
-
   try {
-    final response = await http.get(uri);
+    // POST 요청
+    final response = await http.post(Uri.parse(url), body: params);
 
     if (response.statusCode == 200) {
       String jsonpResponse = response.body;
@@ -33,9 +24,7 @@ Future<List> search(String address) async {
       data = data['results'];
 
       // 파싱된 데이터 출력
-      // print('juso');
       return data['juso']; // 실제 데이터 반환
-
     } else {
       print('요청 실패: ${response.statusCode}');
       return []; // 실패 시 빈 리스트 반환
@@ -45,6 +34,41 @@ Future<List> search(String address) async {
     return []; // 예외 발생 시 빈 리스트 반환
   }
 }
+
+// 도로명주소 검색
+Future<List> search_load(String address) async {
+  final String url = 'http://eunhotech.com/search_load'; // 실제 API 엔드포인트로 수정 필요
+
+  // 파라미터 설정
+  final Map<String, String> params = {
+    'keyword': address,
+  };
+
+  try {
+    // POST 요청
+    final response = await http.post(Uri.parse(url), body: params);
+
+    if (response.statusCode == 200) {
+      String jsonpResponse = response.body;
+      String jsonResponse = jsonpResponse.substring(
+          jsonpResponse.indexOf('(') + 1, jsonpResponse.lastIndexOf(')'));
+
+      Map<String, dynamic> data = json.decode(jsonResponse);
+      data = data['results'];
+
+      // 파싱된 데이터 출력
+      return data['juso']; // 실제 데이터 반환
+    } else {
+      print('요청 실패: ${response.statusCode}');
+      return []; // 실패 시 빈 리스트 반환
+    }
+  } catch (e) {
+    print('예외 처리: $e');
+    return []; // 예외 발생 시 빈 리스트 반환
+  }
+}
+
+
 
 
 class BannerAdWidget extends StatefulWidget {
